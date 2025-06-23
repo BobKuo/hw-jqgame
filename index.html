@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.5/css/bootstrap.css' />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .container {
+      border: 1px solid red;
+      height: 100%;
+      position: relative;
+    }
+
+    .ball {
+      width: 100px;
+      height: 100px;
+      background: deeppink;
+      border-radius: 50%;
+
+      position: 'absolute';
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="ball"></div>
+  </div>
+
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script>
+    const ball_size = $('.ball').height()
+    const game_width = $('.container').width()
+    const game_height = $('.container').height()
+
+    const dropBall = () => {
+
+      const ball = $('<div class="ball"></div>')
+      $('.container').append(ball)
+
+      // 初始位置
+      const initial_x = Math.random() * (game_width - ball_size)
+
+      gsap.set(ball, {
+        x: initial_x,
+        y: 0
+      })
+
+      // 動畫
+      gsap.to('.ball', {
+        y: `${game_height - ball_size}`,
+        duration: 5,
+        ease: "bounce.out",
+        onComplete: function () {
+          setTimeout(() => {
+            $('.ball').fadeOut(200, function () {
+              $(this).remove()
+            })
+          }, 3000) // 3000 毫秒 = 3 秒
+        }
+      })
+    }
+
+    setInterval(dropBall, 5000)
+
+
+  </script>
+</body>
+
+</html>
