@@ -22,6 +22,8 @@
     .container {
       border: 1px solid red;
       height: 100%;
+      padding: 0;
+
       position: relative;
     }
 
@@ -29,24 +31,35 @@
       width: 100px;
       height: 100px;
       background: deeppink;
+      border: 1px solid black;
       border-radius: 50%;
 
-      position: 'absolute';
+      line-height: 100px;
+      text-align: center;
+      font-size: 3rem;
+      color: white;
+
+      position: absolute;
+    }
+
+    .ball:hover {
+      cursor: pointer;
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <div class="ball"></div>
   </div>
 
   <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.js'></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script>
-    const ball_size = $('.ball').height()
+    const ball_size = 100
     const game_width = $('.container').width()
     const game_height = $('.container').height()
+    const drop_height = game_height - ball_size
+    const life_time = 3
 
     const dropBall = () => {
 
@@ -54,7 +67,7 @@
       $('.container').append(ball)
 
       // 初始位置
-      const initial_x = Math.random() * (game_width - ball_size)
+      const initial_x = Math.floor(game_width * Math.random())
 
       gsap.set(ball, {
         x: initial_x,
@@ -62,21 +75,83 @@
       })
 
       // 動畫
-      gsap.to('.ball', {
-        y: `${game_height - ball_size}`,
-        duration: 5,
-        ease: "bounce.out",
-        onComplete: function () {
-          setTimeout(() => {
-            $('.ball').fadeOut(200, function () {
-              $(this).remove()
-            })
-          }, 3000) // 3000 毫秒 = 3 秒
+      let tl = gsap.timeline({
+        onComplete: () => {
+          ball.fadeOut(200, function () {
+            $(this).remove()
+          })
         }
       })
+
+      tl
+        .to(ball, {
+          y: drop_height,
+          duration: life_time,
+          ease: "bounce.out"
+        })
+        .to(ball, {
+          delay: 0.5,
+          duration: 5,
+          onUpdate: function () {
+            ball.text((this.totalDuration() - this.totalTime()).toFixed(0))
+          }
+        })
+
+      //
+      let isDragging = false
+      let offsetX = 0
+      let offsetY = 0
+
+      //
+      ball.on('mousedown', function (e) {
+        isDragging = true
+        // 取得滑鼠點擊位置與球左上角的距離
+        offsetX = e.clientX - this.getBoundingClientRect().left
+        offsetY = e.clientY - this.getBoundingClientRect().top
+
+        // 讓球在最上層
+        $(this).css('z-index', 999)
+        // 動畫
+        gsap.killTweensOf(ball)
+      })
+
+      //
+      $(document).on('mousemove', function (e) {
+        if (!isDragging) return
+
+        // 計算新位置（相對於 container）
+        const containerRect = $('.container')[0].getBoundingClientRect()
+        let x = e.clientX - containerRect.left - offsetX
+        let y = e.clientY - containerRect.top - offsetY
+
+        // 限制在 container 內
+        x = Math.max(0, Math.min(x, game_width - ball_size))
+        y = Math.max(0, Math.min(y, game_height - ball_size))
+
+        gsap.set(ball, { x, y })
+      })
+
+      $(document).on('mouseup', function () {
+        if (!isDragging) return
+
+        isDragging = false;
+        ball.css('z-index', '');
+        // 取得目前 y
+        const currentY = gsap.getProperty(ball[0], 'y');
+        // 重新啟動動畫，從目前 y 掉到底部
+        const tween = gsap.to(ball, {
+          y: drop_height,
+          duration: (drop_height - currentY) / drop_height * life_time, // 依剩餘距離調整動畫時間
+          ease: "bounce.out"
+        });
+        ball.data('tween', tween);
+      });
     }
 
-    setInterval(dropBall, 5000)
+    setInterval(dropBall, 500)
+    dropBall()
+
+
 
 
   </script>
