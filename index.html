@@ -74,28 +74,49 @@
         y: 0
       })
 
-      // 動畫
-      let tl = gsap.timeline({
-        onComplete: () => {
+      // 倒數器
+      let timeLeft = life_time
+      ball.text(timeLeft)
+      const timer = setInterval(() => {
+        timeLeft--
+        if (timeLeft >= 0) {
+          ball.text(timeLeft)
+        }
+        if (timeLeft <= 0) {
+          clearInterval(timer)
           ball.fadeOut(200, function () {
             $(this).remove()
           })
         }
-      })
+      }, 1000)
 
-      tl
+      // 動畫
+      // let tl = gsap.timeline
+      //   (
+      // {
+      //   onUpdate: function () {
+      //     ball.text((this.totalDuration() - this.totalTime()).toFixed(0))
+      //   },
+      //   onComplete: () => {
+      //     ball.fadeOut(200, function () {
+      //       $(this).remove()
+      //     })
+      //   }
+      // }
+      // )
+
+      gsap
         .to(ball, {
           y: drop_height,
           duration: life_time,
           ease: "bounce.out"
         })
-        .to(ball, {
-          delay: 0.5,
-          duration: 5,
-          onUpdate: function () {
-            ball.text((this.totalDuration() - this.totalTime()).toFixed(0))
-          }
-        })
+      // .to(ball, {
+      //   delay: 0.5,
+      //   duration: 5,
+      // })
+
+      // ball.data('tween', tween);
 
       //
       let isDragging = false
@@ -111,7 +132,11 @@
 
         // 讓球在最上層
         $(this).css('z-index', 999)
+
         // 動畫
+        // ball.data('tween').pause();
+        // const tl = ball.data('timeline');
+        // if (tl) tl.pause();
         gsap.killTweensOf(ball)
       })
 
@@ -139,16 +164,17 @@
         // 取得目前 y
         const currentY = gsap.getProperty(ball[0], 'y');
         // 重新啟動動畫，從目前 y 掉到底部
-        const tween = gsap.to(ball, {
+        // const tween = 
+        gsap.to(ball, {
           y: drop_height,
           duration: (drop_height - currentY) / drop_height * life_time, // 依剩餘距離調整動畫時間
           ease: "bounce.out"
         });
-        ball.data('tween', tween);
+        // ball.data('tween', tween);
       });
     }
 
-    setInterval(dropBall, 500)
+    setInterval(dropBall, 3000)
     dropBall()
 
 
