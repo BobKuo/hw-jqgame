@@ -19,7 +19,7 @@
       height: 100vh;
     }
 
-    .container {
+    #game {
       border: 1px solid red;
       height: 100%;
       padding: 0;
@@ -27,26 +27,90 @@
       position: relative;
     }
 
-    .ball {
-      width: 100px;
-      height: 100px;
-      background: deeppink;
-      border: 1px solid black;
-      border-radius: 50%;
-
-      line-height: 100px;
-      text-align: center;
-      font-size: 3rem;
-      color: white;
-
-      position: absolute;
+    .bg-color1 {
+      background-color: #ff5959;
     }
 
-    .ball {
+    .bg-color2 {
+      background-color: #facf5a;
+    }
+
+    .bg-color3 {
+      background-color: #49beb7;
+    }
+
+    .bg-color4 {
+      background-color: #085f63;
+    }
+
+    .ball-1 {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: #ff5959;
+      color: white;
+      border: 1px solid black;
+
+      line-height: 100px;
+      font-size: 3rem;
+    }
+
+    .ball-2 {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #facf5a;
+      color: white;
+      border: 1px solid black;
+
+      line-height: 80px;
+      font-size: 2rem;
+    }
+
+    .ball-3 {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #49beb7;
+      color: white;
+      border: 1px solid black;
+
+      line-height: 60px;
+    }
+
+    .ball-4 {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #085f63;
+      color: white;
+      border: 1px solid black;
+
+      line-height: 40px;
+    }
+
+    .target {
+      position: absolute;
+
+      text-align: center;
+
       cursor: pointer;
       user-select: none;
       -webkit-user-select: none;
     }
+
+    .place {
+      border: 1px solid #000;
+    }
+
+    /* .place-1 {
+      position: absolute;
+
+      width: 400px;
+      height: 400px;
+
+      background-color: #ff5959;
+    } */
 
     #game-menu {
       position: fixed;
@@ -87,14 +151,19 @@
   </div>
 
 
-  <div class="container">
+  <div id="game" class="container">
 
     <div class="row w-100 h-100 g-0 align-items-center position-absolute">
-      <div class="col-3 h-25 bg-primary"></div>
-      <div class="col-3 h-25 bg-info"></div>
-      <div class="col-3 h-25 bg-danger"></div>
-      <div class="col-3 h-25 bg-secondary"></div>
+      <div class="place col-3 h-25 bg-color1"></div>
+      <div class="place col-3 h-25 bg-color2"></div>
+      <div class="place col-3 h-25 bg-color3"></div>
+      <div class="place col-3 h-25 bg-color4"></div>
     </div>
+
+    <!-- <div class="place place-1"></div>
+    <div class="place place-2"></div>
+    <div class="place place-3"></div>
+    <div class="place place-4"></div> -->
 
   </div>
 
@@ -102,11 +171,11 @@
   <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.js'></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script>
-    const ball_size = 100
-    const game_width = $('.container').width()
-    const game_height = $('.container').height()
-    const drop_height = game_height - ball_size
-    const life_time = 5
+    const game_width = $('#game').width()
+    const game_height = $('#game').height()
+
+    const life_time = 10
+    const ball_catogory = ['ball-1', 'ball-2', 'ball-3', 'ball-4']
 
     const computeDropTime = (height) => {
       return Math.sqrt(height / 50)
@@ -114,10 +183,18 @@
 
     const dropBall = () => {
 
-      const ball = $('<div class="ball"></div>')
-      $('.container').append(ball)
+      const randomIndex = Math.floor(Math.random() * ball_catogory.length)
+      const randomClass = ball_catogory[randomIndex]
+
+      const ball = $('<div class="target"></div>').addClass(randomClass)
+      ball.data('typeIdx', randomIndex)
+
+      $('#game').append(ball)
 
       // 初始位置
+      const ball_size = parseInt(ball.css('width'))
+      const drop_height = game_height - ball_size
+
       const initial_x = Math.floor(Math.random() * (game_width - ball_size));
 
       gsap.set(ball, {
@@ -126,20 +203,27 @@
       })
 
       // 倒數器
-      let timeLeft = 20
-      ball.text(timeLeft)
-      const timer = setInterval(() => {
-        timeLeft--
-        if (timeLeft >= 0) {
-          ball.text(timeLeft)
+      let lifeTimeLeft = life_time
+      ball.text(lifeTimeLeft)
+      const ballTimer = setInterval(() => {
+        lifeTimeLeft--
+        if (lifeTimeLeft >= 0) {
+          ball.text(lifeTimeLeft)
         }
-        if (timeLeft <= 0) {
-          clearInterval(timer)
+        if (lifeTimeLeft <= 0) {
+          clearInterval(ballTimer)
           ball.fadeOut(200, function () {
+            // 懲罰
+            const ball_score = 4 - ball.data('typeIdx')
+            score -= ball_score
+            $('#text-score').text(score);
+            //
             $(this).remove()
           })
         }
       }, 1000)
+
+      console.log('drop_height', drop_height)
 
       gsap
         .to(ball, {
@@ -155,8 +239,9 @@
 
 
 
-    // 
-    const GAME_TIME = 10
+    // 遊戲設定
+    const GAME_TIME = 60
+    const DROP_INTERVAL = 1
 
     // 分數
     let score = 0
@@ -169,7 +254,10 @@
       name: '-',
       score: 0
     }
+    // 拖曳物件
+    let draggingObj = null;
 
+    // 遊戲開始
     $('#btn-start').on('click', function () {
       // 停用按鈕
       $(this).attr('disabled', true)
@@ -193,90 +281,99 @@
           clearInterval(timer)
           clearInterval(drop_timer)
 
-
           // 啟用開始按鈕
           $(_this).attr('disabled', false)
           // 清空區域
-          $('.container').empty()
+          $('.target').remove()
+
+          //
+          draggingObj = null
         }
       }, 1000)
 
-      let drop_timer = setInterval(dropBall, 5000)
+      let drop_timer = setInterval(dropBall, DROP_INTERVAL * 1000)
       dropBall()
     })
 
+
+
+
+
+
+
     //
-    let draggingBall = null;
-    let offsetX = 0
-    let offsetY = 0
+    $('#game').on('mousedown', '.target', function (e) {
+      draggingObj = $(this)
 
-    $('.container').on('mousedown', '.ball', function (e) {
-      draggingBall = $(this)
       // 取得滑鼠點擊位置與球左上角的距離
-      offsetX = e.clientX - this.getBoundingClientRect().left
-      offsetY = e.clientY - this.getBoundingClientRect().top
+      draggingObj.data('offsetX', e.clientX - this.getBoundingClientRect().left)
+      draggingObj.data('offsetY', e.clientY - this.getBoundingClientRect().top)
 
-      // 讓球在最上層
-      $(this).css('z-index', 999)
+      // 顯示在最上層
+      draggingObj.css('z-index', 999)
 
       //
-      gsap.killTweensOf(draggingBall)
+      gsap.killTweensOf(draggingObj)
     })
 
     //
     $(document).on('mousemove', function (e) {
-      if (!draggingBall) return
+      if (!draggingObj) return
 
       // 計算新位置（相對於 container）
-      const containerRect = $('.container')[0].getBoundingClientRect()
-      let x = e.clientX - containerRect.left - offsetX
-      let y = e.clientY - containerRect.top - offsetY
+      const gameRect = $('#game')[0].getBoundingClientRect()
+      let x = e.clientX - gameRect.left - draggingObj.data('offsetX')
+      let y = e.clientY - gameRect.top - draggingObj.data('offsetY')
 
       // 限制在 container 內
+      const ball_size = parseInt(draggingObj.css('width'))
       x = Math.max(0, Math.min(x, game_width - ball_size))
       y = Math.max(0, Math.min(y, game_height - ball_size))
 
-      gsap.set(draggingBall[0], { x, y })
+      gsap.set(draggingObj[0], { x, y })
     })
 
     //
     $(document).on('mouseup', function () {
-      if (!draggingBall) return
+      if (!draggingObj) return
 
-
-      // 取得球和 bg-danger 的位置
-      const ballRect = draggingBall[0].getBoundingClientRect();
-      const dangerRect = $('.bg-danger')[0].getBoundingClientRect();
+      // 取得 ball 和 place 的位置
+      const ball_score = draggingObj.data('typeIdx') + 1
+      const objRect = draggingObj[0].getBoundingClientRect();
+      const placeRect = $('.place')[draggingObj.data('typeIdx')].getBoundingClientRect();
 
       // 判斷是否有重疊
       const isInside =
-        ballRect.left >= dangerRect.left &&
-        ballRect.right <= dangerRect.right &&
-        ballRect.top >= dangerRect.top &&
-        ballRect.bottom <= dangerRect.bottom;
+        objRect.left >= placeRect.left &&
+        objRect.right <= placeRect.right &&
+        objRect.top >= placeRect.top &&
+        objRect.bottom <= placeRect.bottom;
 
       if (isInside) {
         // 球消失
-        draggingBall.remove();
+        draggingObj.remove();
         // 增加分數
-        score++;
+        score += ball_score;
         $('#text-score').text(score);
       } else {
 
-        draggingBall.css('z-index', '');
+        draggingObj.css('z-index', '');
         // 取得目前 y
-        const currentY = gsap.getProperty(draggingBall[0], 'y');
+        const currentY = gsap.getProperty(draggingObj[0], 'y');
         // 重新啟動動畫，從目前 y 掉到底部
 
         // (drop_height - currentY) / drop_height * life_time
 
-        gsap.to(draggingBall[0], {
+        const ball_size = parseInt(draggingObj.css('width'))
+        const drop_height = game_height - ball_size
+
+        gsap.to(draggingObj[0], {
           y: drop_height,
           duration: computeDropTime(drop_height - currentY), // 依剩餘距離調整動畫時間
           ease: "bounce.out"
         });
       }
-      draggingBall = null; // 拖曳結束，重置
+      draggingObj = null; // 拖曳結束，重置
     });
   </script>
 </body>
