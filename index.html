@@ -20,7 +20,7 @@
     }
 
     #game {
-      border: 1px solid red;
+      border: 1px solid #999;
       height: 100%;
       padding: 0;
 
@@ -99,19 +99,6 @@
       -webkit-user-select: none;
     }
 
-    .place {
-      border: 1px solid #000;
-    }
-
-    /* .place-1 {
-      position: absolute;
-
-      width: 400px;
-      height: 400px;
-
-      background-color: #ff5959;
-    } */
-
     #game-menu {
       position: fixed;
       top: 0;
@@ -132,116 +119,46 @@
 
   <div id="game-menu" class="btn-group">
     <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
-    <label class="btn btn-outline-primary" for="btnradio1">Radio 1</label>
+    <label class="btn btn-outline-primary" for="btnradio1">Easy</label>
 
     <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-    <label class="btn btn-outline-primary" for="btnradio2">Radio 2</label>
+    <label class="btn btn-outline-primary" for="btnradio2">Normal</label>
 
     <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
-    <label class="btn btn-outline-primary" for="btnradio3">Radio 3</label>
+    <label class="btn btn-outline-primary" for="btnradio3">Hard</label>
 
-    <input type="button" value="開始" id="btn-start">
+    <input type="button" value="START" id="btn-start">
 
   </div>
 
   <div id="score-board">
     <p>分數: <span id="text-score">0</span></p>
     <p>剩餘: <span id="text-time">0</span></p>
-
   </div>
 
 
   <div id="game" class="container">
-
     <div class="row w-100 h-100 g-0 align-items-center position-absolute">
       <div class="place col-3 h-25 bg-color1"></div>
       <div class="place col-3 h-25 bg-color2"></div>
       <div class="place col-3 h-25 bg-color3"></div>
       <div class="place col-3 h-25 bg-color4"></div>
     </div>
-
-    <!-- <div class="place place-1"></div>
-    <div class="place place-2"></div>
-    <div class="place place-3"></div>
-    <div class="place place-4"></div> -->
-
   </div>
 
 
   <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.js'></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script>
-    const game_width = $('#game').width()
-    const game_height = $('#game').height()
-
-    const life_time = 10
-    const ball_catogory = ['ball-1', 'ball-2', 'ball-3', 'ball-4']
-
-    const computeDropTime = (height) => {
-      return Math.sqrt(height / 50)
-    }
-
-    const dropBall = () => {
-
-      const randomIndex = Math.floor(Math.random() * ball_catogory.length)
-      const randomClass = ball_catogory[randomIndex]
-
-      const ball = $('<div class="target"></div>').addClass(randomClass)
-      ball.data('typeIdx', randomIndex)
-
-      $('#game').append(ball)
-
-      // 初始位置
-      const ball_size = parseInt(ball.css('width'))
-      const drop_height = game_height - ball_size
-
-      const initial_x = Math.floor(Math.random() * (game_width - ball_size));
-
-      gsap.set(ball, {
-        x: initial_x,
-        y: 0
-      })
-
-      // 倒數器
-      let lifeTimeLeft = life_time
-      ball.text(lifeTimeLeft)
-      const ballTimer = setInterval(() => {
-        lifeTimeLeft--
-        if (lifeTimeLeft >= 0) {
-          ball.text(lifeTimeLeft)
-        }
-        if (lifeTimeLeft <= 0) {
-          clearInterval(ballTimer)
-          ball.fadeOut(200, function () {
-            // 懲罰
-            const ball_score = 4 - ball.data('typeIdx')
-            score -= ball_score
-            $('#text-score').text(score);
-            //
-            $(this).remove()
-          })
-        }
-      }, 1000)
-
-      console.log('drop_height', drop_height)
-
-      gsap
-        .to(ball, {
-          y: drop_height,
-          duration: computeDropTime(drop_height),
-          ease: "bounce.out"
-        })
-    }
-
-
-
-
-
-
 
     // 遊戲設定
     const GAME_TIME = 60
+    const LIFE_TIME = 10
     const DROP_INTERVAL = 1
+
+    const game_width = $('#game').width()
+    const game_height = $('#game').height()
+    const ball_catogory = ['ball-1', 'ball-2', 'ball-3', 'ball-4']
 
     // 分數
     let score = 0
@@ -259,8 +176,9 @@
 
     // 遊戲開始
     $('#btn-start').on('click', function () {
-      // 停用按鈕
-      $(this).attr('disabled', true)
+      // 隱藏按鈕
+      $('.btn-group').hide()
+
       // 重設分數
       score = 0
       $('#text-score').text(score)
@@ -268,7 +186,7 @@
       timeLeft = GAME_TIME
       $('#text-time').text(timeLeft)
 
-
+      //
       const _this = this
       timer = setInterval(function () {
         // 倒數
@@ -281,8 +199,9 @@
           clearInterval(timer)
           clearInterval(drop_timer)
 
-          // 啟用開始按鈕
-          $(_this).attr('disabled', false)
+          // 顯示開始按鈕
+          $('.btn-group').show()
+
           // 清空區域
           $('.target').remove()
 
@@ -291,15 +210,65 @@
         }
       }, 1000)
 
+      const computeDropTime = (height) => {
+        return Math.sqrt(height / 50)
+      }
+
+      // 球落下
+      const dropBall = () => {
+
+        const randomIndex = Math.floor(Math.random() * ball_catogory.length)
+        const randomClass = ball_catogory[randomIndex]
+
+        const ball = $('<div class="target"></div>').addClass(randomClass)
+        ball.data('typeIdx', randomIndex)
+
+        $('#game').append(ball)
+
+        // 初始位置
+        const ball_size = parseInt(ball.css('width'))
+        const drop_height = game_height - ball_size
+
+        const initial_x = Math.floor(Math.random() * (game_width - ball_size));
+
+        gsap.set(ball, {
+          x: initial_x,
+          y: 0
+        })
+
+        // 倒數器
+        let lifeTimeLeft = LIFE_TIME
+        ball.text(lifeTimeLeft)
+        const ballTimer = setInterval(() => {
+          lifeTimeLeft--
+          if (lifeTimeLeft >= 0) {
+            ball.text(lifeTimeLeft)
+          }
+          if (lifeTimeLeft <= 0) {
+            clearInterval(ballTimer)
+            ball.fadeOut(200, function () {
+              // 懲罰
+              const ball_score = 4 - Number(ball.data('typeIdx'))
+              score -= ball_score
+              console.log(score)
+              $('#text-score').text(score);
+              //
+              $(this).remove()
+            })
+          }
+        }, 1000)
+
+        gsap
+          .to(ball, {
+            y: drop_height,
+            duration: computeDropTime(drop_height),
+            ease: "bounce.out"
+          })
+      }
+
       let drop_timer = setInterval(dropBall, DROP_INTERVAL * 1000)
       dropBall()
     })
-
-
-
-
-
-
 
     //
     $('#game').on('mousedown', '.target', function (e) {
@@ -338,7 +307,8 @@
       if (!draggingObj) return
 
       // 取得 ball 和 place 的位置
-      const ball_score = draggingObj.data('typeIdx') + 1
+      console.log(Number(draggingObj.data('typeIdx')))
+      const ball_score = Number(draggingObj.data('typeIdx')) + 1
       const objRect = draggingObj[0].getBoundingClientRect();
       const placeRect = $('.place')[draggingObj.data('typeIdx')].getBoundingClientRect();
 
@@ -361,9 +331,6 @@
         // 取得目前 y
         const currentY = gsap.getProperty(draggingObj[0], 'y');
         // 重新啟動動畫，從目前 y 掉到底部
-
-        // (drop_height - currentY) / drop_height * life_time
-
         const ball_size = parseInt(draggingObj.css('width'))
         const drop_height = game_height - ball_size
 
